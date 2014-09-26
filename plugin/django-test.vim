@@ -16,15 +16,19 @@ if !exists("g:django_test_vimcommand")
   endif
 endif
 
+function! GetModule()
+  return substitute(expand('%:r'),"/",".","g")
+endfunction
+
 function! DjangoTestRunAllTests()
-  let l:test = "."
+  let l:test = ""
   call DjangoTestSetLastTestCommand(l:test)
   call DjangoTestRunTests(l:test)
 endfunction
 
 function! DjangoTestRunCurrentTestFile()
   if DjangoTestInTestFile()
-    let l:test = @%
+    let l:test = GetModule()
     call DjangoTestSetLastTestCommand(l:test)
     call DjangoTestRunTests(l:test)
   else
@@ -34,13 +38,15 @@ endfunction
 
 function! DjangoTestRunNearestTest()
   let pos = getpos(".")
+  normal $
   call search("\\s*def .", "be")
   let funcname = expand("<cword>")
+  normal $
   call search("\\s*class .", "be")
   let classname = expand("<cword>")
   call setpos('.', pos)
   if DjangoTestInTestFile()
-    let l:test = substitute(fnamemodify(@%, ":r"),"/",".","g") . "." . classname . "." . funcname
+    let l:test = GetModule() . "." . classname . "." . funcname
     call DjangoTestSetLastTestCommand(l:test)
     call DjangoTestRunTests(l:test)
   else
